@@ -11,6 +11,8 @@
 #include "InputActionValue.h"
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/Controller.h"
 
 ATDS_PlayerController::ATDS_PlayerController()
 {
@@ -19,7 +21,6 @@ ATDS_PlayerController::ATDS_PlayerController()
 	CachedDestination = FVector::ZeroVector;
 	FollowTime = 0.f;
 }
-
 
 void ATDS_PlayerController::BeginPlay()
 {
@@ -58,13 +59,6 @@ void ATDS_PlayerController::SetupInputComponent()
 			SetDestinationTouchAction, ETriggerEvent::Completed, this, &ATDS_PlayerController::OnTouchReleased);
 		EnhancedInputComponent->BindAction(
 			SetDestinationTouchAction, ETriggerEvent::Canceled, this, &ATDS_PlayerController::OnTouchReleased);
-	}
-	else
-	{
-		//UE_LOG(LogTemplateCharacter, Error,
-		//	TEXT("'%s' Failed to find an Enhanced Input Component! This template is built to use the Enhanced Input system. If you intend "
-		//		 "to use the legacy system, then you will need to update this C++ file."),
-		//	*GetNameSafe(this));
 	}
 }
 

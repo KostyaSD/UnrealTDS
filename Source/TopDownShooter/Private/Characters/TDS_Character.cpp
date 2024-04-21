@@ -1,6 +1,5 @@
 // Top Down Shooter, Copyright GamesWID. All Rights Reserved.
 
-
 #include "Characters/TDS_Character.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
@@ -11,7 +10,10 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Materials/Material.h"
 #include "Engine/World.h"
-
+#include "GameFramework/Controller.h"
+#include "EnhancedInputComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 ATDS_Character::ATDS_Character()
 {
@@ -50,4 +52,54 @@ ATDS_Character::ATDS_Character()
 void ATDS_Character::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	Look(DeltaSeconds);
+}
+
+void ATDS_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	{
+		// Moving
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ATDS_Character::Move);
+	}
+}
+
+void ATDS_Character::Move(const FInputActionValue& Value)
+{
+	// input is a Vector2D
+	FVector2D MovementVector = Value.Get<FVector2D>();
+
+	if (Controller != nullptr)
+	{
+		// find out which way is forward
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+		// get forward vector
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+
+		// get right vector
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+		// add movement
+		AddMovementInput(ForwardDirection, MovementVector.Y);
+		AddMovementInput(RightDirection, MovementVector.X);
+	}
+}
+
+void ATDS_Character::Look(float DeltaSeconds)
+{
+	if (!GetWorld()) return;
+	APlayerController* ThisController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (ThisController)
+	{
+		FHitResult ResultHit;
+		ThisController->GetHitResultUnderCursorByChannel(ETraceTypeQuery::TraceTypeQuery6, false, ResultHit);
+
+		double FindRotatorYaw = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), ResultHit.Location).Yaw;
+		SetActorRotation(FQuat(FRotator(0.0, FindRotatorYaw, 0.0)));
+	}
 }
