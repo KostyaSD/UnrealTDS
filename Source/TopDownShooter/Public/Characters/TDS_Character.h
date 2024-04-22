@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Core/Types.h"
 #include "TDS_Character.generated.h"
 
 class UCameraComponent;
@@ -31,6 +32,18 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> MoveAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	EMovementState MovementState = EMovementState::Run_State;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	FCharacterSpeed MovementInfo;
+
+	UFUNCTION(BlueprintCallable)
+	void CharacterUpdate();	
+	
+	UFUNCTION(BlueprintCallable)
+	void ChangeMovementState(EMovementState InMovementState);
 
 protected:
 	// APawn interface
